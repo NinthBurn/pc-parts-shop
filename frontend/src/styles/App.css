@@ -1,0 +1,104 @@
+.AdminPage {
+  background-color: rgba(22, 22, 24, 0.5);
+  border-radius: 30px;
+  position: relative;
+  height: 750px;
+  width: 95%;
+  left: 2.5vw;
+  top: 12vh;
+
+  min-width: 1000px;
+  display: flex;
+  justify-content: center;
+}
+
+.App {
+  position: relative;
+  text-align: center;
+
+  display: flex;
+  flex-direction: column;
+
+  margin-top: 20px;
+  row-gap: 30px;
+  width: 90%;
+  height: 70%;
+
+  min-height: fit-content;
+  min-width: 960px;
+}
+
+.PanelTitle {
+  font-size: 30px;
+  color: aliceblue;
+}
+
+.PagePanel {
+  border-color: rgb(0, 0, 0);
+  border-style: solid;
+  text-align: center;
+  display: flex;
+  justify-self: start;
+  flex-direction: row;
+  min-height: 600px;
+  max-height: 600px;
+
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(157, 208, 238, 0.801);
+}
+
+body {
+  /* background-color: rgb(49, 66, 83); */
+  background: #8BABD2;
+  background: radial-gradient(at center, #8BABD2, #1078B7);/*
+  * Created with https://www.css-gradient.com
+  * Gradient link: https://www.css-gradient.com/?c1=8bd295&c2=1078b7&gt=r&gd=dcc
+  */
+  background: #8BD295;
+  background: radial-gradient(at center, #8BD295, #1078B7);
+  width: 100vw;
+  height: 100vh;
+
+}
+
+@keyframes popupNotification {
+  0% {
+    left: 0px;
+    top: 10vh;
+    opacity: 1;
+  }
+
+  40% {
+    left: 0px;
+    top: 4vh;
+    opacity: 1;
+  }
+
+  70% {
+    left: 0px;
+    top: 4vh;
+    opacity: 1;
+  }
+
+  90% {
+    left: 0px;
+    top: 6vh;
+    opacity: 0;
+  }
+}
+
+.AlertNotification {
+  height: "50px";
+  align-self: center;
+  width: 50%;
+  position: relative;
+  opacity: 0;
+  animation: popupNotification;
+  animation-duration: 7s;
+}

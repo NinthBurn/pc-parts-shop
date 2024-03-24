@@ -1,0 +1,38 @@
+.HomeBody {
+    height: 100vh;
+    width: 100vw;
+
+    background: #3A62AC;
+    background: radial-gradient(at right bottom, #3A62AC, #68AFD3);
+    width: 100vw;
+    height: 100vh;
+}
+
+.HomePanel {
+    font-size: 25px;
+    text-wrap: wrap;
+    text-align: center;
+
+    color: aliceblue;
+    background-color: rgba(22, 22, 24, 0.5);
+    border-radius: 30px;
+
+    display:flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+
+    position: absolute;
+    top: 45%;
+    left: 50%;
+    width: 90%;
+    height: 50%;
+    transform: translate(-50%, -50%);
+
+    .NavigationButton{
+        position: relative;
+        width: min-content;
+        align-self: center;
+        height: 50px;
+        bottom: 25px;
+      }
+}

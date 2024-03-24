@@ -1,0 +1,36 @@
+.statsPage{
+    text-align: center;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+
+    background: #0B81C7;
+    background: linear-gradient(225deg, #0B81C7, #238B2E);
+}
+
+.chartBox{
+    margin: 2.5%;
+    margin-bottom: 1%;
+    margin-top: 1.5%;
+    height: 45%;
+    width: 45%;
+    min-width: 45%;
+    min-height: 45%;
+    display: flex;
+    flex-direction: column;
+    background-color: #3435348a;
+    border-radius: 100px;
+
+    h4{
+        color:aliceblue;
+        font-weight: 600;
+        font-size: 20px;
+        margin: 0px;
+        margin-top: 20px;
+        margin-bottom: 5px;
+        word-wrap: break-word;
+        white-space: normal;
+    }
+}

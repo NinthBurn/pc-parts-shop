@@ -1,0 +1,43 @@
+.ProductPanel {
+    font-size: 20px;
+    text-wrap: wrap;
+
+    color: aliceblue;
+    background-color: rgba(22, 22, 24, 0.5);
+    border-radius: 30px;
+
+    display:flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 90%;
+    height: 80%;
+    transform: translate(-50%, -50%);
+
+    h2{
+        text-align: center;
+    }
+
+    h4{
+        position: relative;
+        left: 15%;
+    }
+
+    .NavigationButton{
+        position: relative;
+        width: min-content;
+        align-self: center;
+        height: 50px;
+        top: 25px;
+      }
+}
+
+.ProductInfoPanel{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    column-gap: 150px;
+}

@@ -1,0 +1,21 @@
+.EditButton {
+  width: 4em;
+  height: 2.5em;
+
+}
+
+.DeleteButton {
+  width: 5.8em;
+  height: 2.5em;
+}
+
+.NavigationButton{
+  position: relative;
+  width: min-content;
+  height: 50px
+}
+
+.DeleteDialog{
+  background-color: rgb(74, 129, 167);
+  border: 3px solid rgb(48, 81, 100);
+}

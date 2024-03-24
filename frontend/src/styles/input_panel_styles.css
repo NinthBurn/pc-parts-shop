@@ -1,0 +1,50 @@
+
+.InputBoxPanel{
+    background-color: rgb(74, 129, 167);
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  
+    row-gap: 5%;
+    border: 10px;
+    border-color: rgb(43, 65, 78);
+    border-style: solid;
+    
+  }
+  
+  .InputEntryBox{
+    border-color: rgb(43, 65, 78);
+    font-size: 1.45vmax;
+    font-family:'Franklin Gothic Medium';
+    text-align: center;
+    align-items: center;
+    width: "50%";
+  }
+  
+  .InputBox{
+    background-color: rgb(104, 124, 146);
+    border-color:rgb(83, 93, 104);
+    color:aliceblue;
+  
+    font-size: 26px;
+    font-size: 1.15vmax;
+    width: 50%;
+    font-family:'Franklin Gothic Medium';
+    letter-spacing: 1px;
+    text-align: center;
+    
+    min-width: 100px;
+  }
+  
+  @font-face {
+    font-family: consolas;
+    src: "public/CONSOLA.TTF";
+  }
+
+.InsertButton{
+    align-self: center;
+    width:6.5em;
+    height:2.5em;
+}
+
