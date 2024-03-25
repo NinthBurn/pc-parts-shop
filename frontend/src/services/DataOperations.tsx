@@ -45,8 +45,13 @@ export function SortDataByProperty(DataList: ComputerComponent[], propertyIndex:
   });
 
   sortedData = sortedData.sort((x, y) => {
-    const x_value: any = Object.values(x)[propertyIndex];
-    const y_value: any = Object.values(y)[propertyIndex];
+    let x_value: any = Object.values(x)[propertyIndex];
+    let y_value: any = Object.values(y)[propertyIndex];
+
+	if(typeof x_value === "string"){
+		x_value = x_value.toLowerCase();
+		y_value = y_value.toLowerCase();
+	}
 
     if (sort_ascending[propertyIndex - 1])
       return x_value < y_value ? -1 : x_value > y_value ? 1 : 0;
