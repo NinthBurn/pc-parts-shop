@@ -8,32 +8,54 @@ import { useState, createContext, Context } from 'react';
 import HomeButton from "../components/buttons/HomeButton.tsx";
 import StatisticsButton from "../components/buttons/StatisticsButton.tsx";
 import { Pagination } from "@mui/material";
-import { DataContext } from "../App.tsx";
+import { DataContext, PageContext } from "../App.tsx";
+import { getNextPages } from "../services/backend.tsx";
 
 export let NotificationBoxContext: Context<{ NotificationBox: ReactElement, changeNotification: React.Dispatch<React.SetStateAction<ReactElement>> }>;
 
 function AdminPanel() {
-  const itemsPerPage = 9;
-  const { DataList } = useContext(DataContext);
-  const [NotificationBox, changeNotification] = useState(<></>);
-  
-  const [ TableData, changeTableData ] = React.useState(DataList.slice(0, itemsPerPage - 1));
-  const [ page, setPage ] = useState(1);
+  const { DataList, changeData } = useContext(DataContext);
+  const { pageMetaData, changePageMetaData} = useContext(PageContext);
+  const [ NotificationBox, changeNotification ] = useState(<></>);
 
-  NotificationBoxContext = createContext<{ NotificationBox: ReactElement, changeNotification: React.Dispatch<React.SetStateAction<ReactElement>> }>({ NotificationBox: NotificationBox, changeNotification: changeNotification });
+  const pageCount = pageMetaData.pageCount;
+  const itemsPerPage = pageMetaData.elementPerPage;
+  const currentPage = pageMetaData.currentPage;
 
-  useEffect( () => {
-    const previousPage = page - 1;
-    if(previousPage > 0 && page > Math.ceil(DataList.length / itemsPerPage)){
-      setPage(previousPage);
-      changeTableData(DataList.slice((previousPage - 1) * itemsPerPage, previousPage * itemsPerPage));
+  const [TableData, changeTableData] = React.useState(DataList.slice(0, itemsPerPage - 1));
 
-    }else changeTableData(DataList.slice((page - 1) * itemsPerPage, page * itemsPerPage));
-  }, [DataList, page])
+  NotificationBoxContext = createContext({ NotificationBox: NotificationBox, changeNotification: changeNotification });
+
+  useEffect(() => {
+    const previousPage = pageMetaData.currentPage - 1;
+    const currentPage = pageMetaData.currentPage;
+    const pageCount = pageMetaData.pageCount;
+    const itemsPerPage = pageMetaData.elementPerPage;
+
+    const newPageMetaData = {...pageMetaData};
+
+    if (previousPage > 0 && currentPage + 1 > pageCount) {
+      newPageMetaData.currentPage = previousPage;
+      changePageMetaData(newPageMetaData)
+
+      changeTableData(DataList.slice((previousPage) * itemsPerPage, (previousPage + 1) * itemsPerPage ));
+
+    } else
+      changeTableData(DataList.slice((currentPage) * itemsPerPage, (currentPage + 1) * itemsPerPage ));
+
+  }, [DataList, pageMetaData, changePageMetaData])
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
-    setPage(value);
-    changeTableData(DataList.slice((value - 1) * itemsPerPage, value * itemsPerPage));
+    const newPageMetaData = {...pageMetaData};
+    newPageMetaData.currentPage = value - 1;
+    let selectedPage = value - 1;
+
+    if (selectedPage > pageMetaData.loadedPages - 1){
+      getNextPages(DataList, selectedPage, changeData, pageMetaData, changePageMetaData);
+    }else{
+      changePageMetaData(newPageMetaData);
+    }
+
   };
 
   return (
@@ -42,7 +64,7 @@ function AdminPanel() {
         <div className="App">
           <div className="PanelTitle">Computer Store Administrator Panel</div>
           <div className="PagePanel">
-            <Table headers={ColumnHeaders} data={TableData}/>
+            <Table headers={ColumnHeaders} data={TableData} />
             <InputPanel labels={InputLabels} />
           </div>
           <Pagination sx={{
@@ -53,7 +75,8 @@ function AdminPanel() {
                 fontWeight: "600"
               }
             }
-          }} className="TablePageSelect" page={page} onChange={handlePageChange} siblingCount={0} count={Math.ceil(DataList.length / 9)} />
+          }}
+            className="TablePageSelect" page={currentPage + 1} onChange={handlePageChange} siblingCount={0} count={Math.ceil(pageCount)} />
           {NotificationBox}
         </div>
       </div>

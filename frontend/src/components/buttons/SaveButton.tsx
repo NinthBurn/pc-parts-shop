@@ -9,7 +9,7 @@ import { DataContext } from '../../App.tsx';
 import { ComputerComponent, ComputerComponentFromStringArray } from '../ComputerComponent.tsx';
 import { displayNotification } from '../DisplayNotification.tsx';
 import { InsertOrUpdateElement } from '../../services/DataOperations.tsx';
-import axios from 'axios';
+import { modifyElementInBackend } from '../../services/backend.tsx';
 
 interface SaveButtonProps {
     InputData: string[];
@@ -40,25 +40,8 @@ export function SaveButton(props: SaveButtonProps) {
 
         displayNotification(changeNotification, notificationText, notificationType);
 
-        async function modifyData() {
-            const newDate = new Date(insertedComponent.releaseDate);
-            newDate.setDate(newDate.getDate() + 1);
-            
-            await axios.post("/api/v1/computer_components/save",
-            {
-                productID: insertedComponent.productID,
-                manufacturer: insertedComponent.manufacturer,
-                productName: insertedComponent.productName,
-                category: insertedComponent.category,
-                price: insertedComponent.price,
-                releaseDate: newDate,
-                quantity: insertedComponent.quantity,
-            });
-            changeData(newData);
-        }
-        
         if (newData.length > 0)
-            modifyData()
+            modifyElementInBackend(insertedComponent, changeData, newData);
     }
 
     return <ThemeProvider theme={ButtonTheme}><Button variant="contained" color="buttonGreen" onClick={() => saveClicked(props.InputData)} className="InsertButton"><AppRegistrationIcon />SAVE</Button></ThemeProvider>;

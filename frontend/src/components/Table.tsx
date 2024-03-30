@@ -1,5 +1,5 @@
 import ".././styles/table_styles.css";
-import { DataContext } from "../App.tsx";
+import { DataContext, PageContext } from "../App.tsx";
 import { NotificationBoxContext } from "../pages/AdminPage.tsx";
 import DeleteButton from "./buttons/DeleteButton.tsx";
 import EditButton from "./buttons/EditButton.tsx";
@@ -7,11 +7,11 @@ import { ViewButton } from "./buttons/ViewButton.tsx";
 import { displayNotification } from "./DisplayNotification.tsx";
 import ComputerComponentElement from "./ComputerComponent.tsx";
 import React from "react";
-import { SortDataByProperty } from "../services/DataOperations.tsx";
+import { SortDataByProperty, columnNameMap, getSortingOrder } from "../services/DataOperations.tsx";
 import { InputTextChanged } from "./InputPanel.tsx";
 import { ComputerComponent } from "./ComputerComponent.tsx";
 import { ComputerComponentToStringArray } from "./ComputerComponent.tsx";
-import { Height } from "@mui/icons-material";
+import { getBackendData } from "../services/backend.tsx";
 
 interface TableProps {
 	headers: string[];
@@ -21,14 +21,43 @@ interface TableProps {
 function Table(props: TableProps) {
 	const { DataList, changeData } = React.useContext(DataContext);
     const { changeNotification } = React.useContext(NotificationBoxContext);
-	
-	const onColumnHeadClick = (index: number) => {
+	const { pageMetaData, changePageMetaData } = React.useContext(PageContext);
+
+	const onColumnHeadClickOld = (index: number) => {
 		if (index < 1 || index > 6) return 0;
 
         const {sortedData, sortOrder} = SortDataByProperty(DataList, index)
         changeData(sortedData)
 
         let sort_notification = "Sorted elements in " + sortOrder + " order by ";
+		sort_notification += props.headers[index - 1] + ".";
+		displayNotification(changeNotification, sort_notification, "info");
+	};
+
+	const onColumnHeadClick = (index: number) => {
+		if (index < 1 || index > 6) return 0;
+
+		let sort_notification = "Sorted elements in ";
+
+		if(pageMetaData.loadedPages === pageMetaData.pageCount){
+			const {sortedData, sortOrder} = SortDataByProperty(DataList, index)
+			changeData(sortedData)
+
+			sort_notification += sortOrder + " order by ";
+
+		}else{ // fetch pages with sorted data from server
+			const sortOrder = getSortingOrder(index)
+
+			const newPageMetaData = {...pageMetaData};
+			newPageMetaData.sortDirection = sortOrder;
+			newPageMetaData.sortField = columnNameMap[props.headers[index - 1]];
+			changePageMetaData(newPageMetaData);
+
+			getBackendData(DataList, changeData, newPageMetaData, changePageMetaData);
+
+			sort_notification += (sortOrder === "ASC" ? "ascending" : "descending") + " order by ";
+		}
+
 		sort_notification += props.headers[index - 1] + ".";
 		displayNotification(changeNotification, sort_notification, "info");
 	};

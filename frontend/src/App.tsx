@@ -2,45 +2,37 @@ import './styles/App.css';
 import React, { useEffect } from 'react';
 import { useState, createContext, Context } from 'react';
 import { ComputerComponent } from './components/ComputerComponent.tsx';
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, } from "react-router-dom";
 import Home from './pages/Home.tsx';
 import AdminPanel from './pages/AdminPage.tsx';
 import ProductPage from './pages/ProductPage.tsx';
 import StatisticsPage from './pages/StatisticsPage.tsx';
-import axios from 'axios';
-import InsertData from './AppData.tsx';
-import { stringToDate } from './services/DateOperations.tsx';
+import { getBackendData } from './services/backend.tsx';
+import { pageMetaDataType } from './services/interfaces.tsx';
+
 
 export let DataContext: Context<{ DataList: ComputerComponent[]; changeData: React.Dispatch<React.SetStateAction<ComputerComponent[]>> }>;
+export let PageContext: Context<{ pageMetaData: pageMetaDataType; changePageMetaData: React.Dispatch<React.SetStateAction<pageMetaDataType>>}>;
+
+
 function App() {
   const [DataList, changeData] = useState<ComputerComponent[]>([]);
-  DataContext = createContext<{ DataList: ComputerComponent[]; changeData: React.Dispatch<React.SetStateAction<ComputerComponent[]>> }>({ DataList: DataList, changeData });
+  const [pageMetaData, changePageMetaData] = useState<pageMetaDataType>({
+    pageCount: 0,
+    elementPerPage: 9,
+    currentPage: 0,
+    loadedPages: 0,
+    sortField: "productID",
+    sortDirection: "ASC",
+  });
 
-  const getBackendData = async () => {
-    const { data } = await axios.get("/api/v1/computer_components");
-
-    const appData: ComputerComponent[] = data.map((entity: any) => {
-      return {
-        productID: entity.productID,
-        manufacturer: entity.manufacturer,
-        productName: entity.productName,
-        category: entity.category,
-        price: entity.price,
-        releaseDate: stringToDate(entity.releaseDate, "yyyy-mm-dd", "-"),
-        quantity: entity.quantity,
-      }
-    });
-
-    changeData(appData)
-    console.log("Fetched " + appData.length + " items from server.")
-  }
+  DataContext = createContext({ DataList, changeData });
+  PageContext = createContext({ pageMetaData, changePageMetaData });
 
   useEffect(() => {
-    getBackendData();
+    console.log("Loading first page...")
+    const load = () => getBackendData(DataList, changeData, pageMetaData, changePageMetaData);
+    load();
   }, [])
 
   return (

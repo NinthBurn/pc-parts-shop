@@ -32,7 +32,7 @@ function DeleteButton(props: ButtonProps) {
             return;
 
         async function modifyData() {
-            await axios.post("/api/v1/computer_components/delete/" + identifier);
+            await axios.delete("/api/v1/computer_components/delete/" + identifier);
             changeData(arrayAfterDeletion);
         }
         
