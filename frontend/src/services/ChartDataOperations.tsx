@@ -1,87 +1,25 @@
+import axios from 'axios';
 import { ComputerComponent } from "../components/ComputerComponent";
+import { ChartDataType } from './interfaces';
 
-export function generateCategoryChartData(DataList: ComputerComponent[]){
-    const quantityData: { [key: string]: number} = {};
 
-    DataList.forEach((element) => {
-        if(element.category in quantityData)
-            quantityData[element.category] += 1;
-        else quantityData[element.category] = 1;
-    });
-
-    const chartData = Object.entries(quantityData).map((value, index) => {
-        return {
-            id: index,
-            value: value[1],
-            label: value[0]
-        };
-    });
-    
-    return chartData;
+async function fetchChartData(chartType: string, changeChartData: React.Dispatch<React.SetStateAction<ChartDataType[]>>){
+    const data: {id: number, label: string, value: number}[] = (await (axios.get("/api/v1/computer_components/charts/" + chartType))).data;
+    changeChartData(data);
 }
 
-export function generateCategoryQuantityChartData(DataList: ComputerComponent[]){
-    const quantityData: { [key: string]: number} = {};
-
-    DataList.forEach((element) => {
-        if(element.category in quantityData)
-            quantityData[element.category] += element.quantity;
-        else quantityData[element.category] = element.quantity;
-    });
-
-    const chartData = Object.entries(quantityData).map((value, index) => {
-        return {
-            id: index,
-            value: value[1],
-            label: value[0]
-        };
-    });
-    
-    return chartData;
+export function generateCategoryChartData(changeChartData: React.Dispatch<React.SetStateAction<ChartDataType[]>>){        
+    return fetchChartData("category_diversity", changeChartData)
 }
 
-export function generateBrandDiversityChartData(DataList: ComputerComponent[]){
-    const quantityData: { [key: string]: number} = {};
-
-    DataList.forEach((element) => {
-        if(element.manufacturer in quantityData)
-            quantityData[element.manufacturer] += 1;
-        else quantityData[element.manufacturer] = 1;
-    });
-
-    const chartData = Object.entries(quantityData).map((value, index) => {
-        return {
-            id: index,
-            value: value[1],
-            label: value[0]
-        };
-    });
-    
-    return chartData;
+export function generateCategoryQuantityChartData(changeChartData: React.Dispatch<React.SetStateAction<ChartDataType[]>>){
+    return fetchChartData("number_by_category", changeChartData)
 }
 
-export function generatePriceClassChartData(DataList: ComputerComponent[]){
-    const priceClassData: { [key: string]: number} = {
-        "Low End < 250": 0,
-        "Mid Range < 600": 0,
-        "High End > 600": 0
-    };
+export function generateBrandDiversityChartData(changeChartData: React.Dispatch<React.SetStateAction<ChartDataType[]>>){
+    return fetchChartData("products_by_brand", changeChartData)
+}
 
-    DataList.forEach((element) => {
-        if(element.price < 250)
-            priceClassData["Low End < 250"] += 1;
-        else if(element.price < 600)
-            priceClassData["Mid Range < 600"] += 1;
-        else priceClassData["High End > 600"] += 1;    
-    });
-
-    const chartData = Object.entries(priceClassData).map((value, index) => {
-        return {
-            id: index,
-            value: value[1],
-            label: value[0] + "$",
-        };
-    });
-    
-    return chartData;
+export function generatePriceClassChartData(changeChartData: React.Dispatch<React.SetStateAction<ChartDataType[]>>){
+    return fetchChartData("products_by_price_class", changeChartData)
 }

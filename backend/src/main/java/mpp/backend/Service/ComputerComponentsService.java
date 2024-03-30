@@ -1,16 +1,13 @@
 package mpp.backend.Service;
 
 import lombok.AllArgsConstructor;
+import mpp.backend.Model.ChartData;
 import mpp.backend.Model.ComputerComponent;
 import mpp.backend.Repository.ComputerComponentsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.*;
 
@@ -19,8 +16,6 @@ import java.util.*;
 public class ComputerComponentsService {
     @Autowired
     private final ComputerComponentsRepository repository;
-
-    private final int elementsPerPage = 9;
 
 
     // --- Pagination --- //
@@ -34,7 +29,105 @@ public class ComputerComponentsService {
     // --- Generate Chart Data --- //
 
 
+    public List<ChartData> generateDiversityCategoryChartData(){
+        List<ChartData> result = new ArrayList<>();
 
+        List<ComputerComponent> elements = this.repository.findAll();
+
+        HashMap<String, Long> chartDataEntries = new HashMap<>();
+        elements.forEach((element) -> {
+            String category = element.getCategory();
+
+            if(chartDataEntries.containsKey(category)){
+                chartDataEntries.put(category, chartDataEntries.get(category) + 1);
+
+            }else{
+                chartDataEntries.put(category, 1L);
+            }
+        });
+
+        chartDataEntries.forEach((key, value) -> {
+                result.add(new ChartData((long) result.size(), value, key));
+        });
+
+        return result;
+    }
+
+    public List<ChartData> generateStockByCategoryChartData(){
+        List<ChartData> result = new ArrayList<>();
+
+        List<ComputerComponent> elements = this.repository.findAll();
+//        sortedByCategory.sort(Comparator.comparing(ComputerComponent::getCategory));
+
+        HashMap<String, Long> chartDataEntries = new HashMap<>();
+        elements.forEach((element) -> {
+            String category = element.getCategory();
+
+            if(chartDataEntries.containsKey(category)){
+                chartDataEntries.put(category, chartDataEntries.get(category) + element.getQuantity());
+
+            }else{
+                chartDataEntries.put(category, (long) element.getQuantity());
+            }
+        });
+
+        chartDataEntries.forEach((key, value) -> {
+            result.add(new ChartData((long) result.size(), value, key));
+        });
+
+        return result;
+    }
+
+    public List<ChartData> generateProductsByPriceClassChartData(){
+        List<ChartData> result = new ArrayList<>();
+
+        List<ComputerComponent> elements = this.repository.findAll();
+
+        HashMap<String, Long> chartDataEntries = new HashMap<>(Map.of("Low End < 250$", 0L, "Middle Range < 600$", 0L, "High End > 600$", 0L));
+
+        elements.forEach((element) -> {
+            int roundedPrice = (int) Math.round(element.getPrice());
+            String priceClass;
+
+            if(roundedPrice < 251)
+                priceClass = "Low End < 250$";
+            else if(roundedPrice < 601)
+                priceClass = "Middle Range < 600$";
+            else priceClass = "High End > 600$";
+
+            chartDataEntries.put(priceClass, chartDataEntries.get(priceClass) + 1);
+        });
+
+        chartDataEntries.forEach((key, value) -> {
+            result.add(new ChartData((long) result.size(), value, key));
+        });
+
+        return result;
+    }
+
+    public List<ChartData> generateProductsByBrandChartData(){
+        List<ChartData> result = new ArrayList<>();
+
+        List<ComputerComponent> elements = this.repository.findAll();
+
+        HashMap<String, Long> chartDataEntries = new HashMap<>();
+        elements.forEach((element) -> {
+            String manufacturer = element.getManufacturer();
+
+            if(chartDataEntries.containsKey(manufacturer)){
+                chartDataEntries.put(manufacturer, chartDataEntries.get(manufacturer) + 1);
+
+            }else{
+                chartDataEntries.put(manufacturer, 1L);
+            }
+        });
+
+        chartDataEntries.forEach((key, value) -> {
+            result.add(new ChartData((long) result.size(), value, key));
+        });
+
+        return result;
+    }
 
 
     // --- Getters --- //

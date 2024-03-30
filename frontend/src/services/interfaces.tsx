@@ -18,6 +18,10 @@ export interface pageMetaDataType{
     sortDirection: "ASC" | "DESC";
 }
 
+export interface ChartDataType{
+    id: number, label: string, value: number
+}
+
 export interface dataPageResponse{
     content: elementFromServer[],
     pageable: {

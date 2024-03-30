@@ -1,6 +1,7 @@
 package mpp.backend.Controller;
 
 import lombok.AllArgsConstructor;
+import mpp.backend.Model.ChartData;
 import mpp.backend.Model.ComputerComponent;
 import mpp.backend.Service.ComputerComponentsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +65,31 @@ public class ComputerComponentController {
             return new ResponseEntity<>("An error occurred; the elements could not be added.\n" + e.getMessage(), HttpStatus.CONFLICT);
         }
         return new ResponseEntity<>("Items registered.", HttpStatus.OK);
+    }
+
+
+    // --- Filtering --- //
+
+
+    @GetMapping("/charts/category_diversity")
+    public ResponseEntity<List<ChartData>> getCategoryDiversityChartData(){
+        return new ResponseEntity<>(service.generateDiversityCategoryChartData(), HttpStatus.OK);
+    }
+
+
+    @GetMapping("/charts/number_by_category")
+    public ResponseEntity<List<ChartData>> getStockByCategoryChartData(){
+        return new ResponseEntity<>(service.generateStockByCategoryChartData(), HttpStatus.OK);
+    }
+
+    @GetMapping("/charts/products_by_price_class")
+    public ResponseEntity<List<ChartData>> getProductsByPriceClassChartData(){
+        return new ResponseEntity<>(service.generateProductsByPriceClassChartData(), HttpStatus.OK);
+    }
+
+    @GetMapping("/charts/products_by_brand")
+    public ResponseEntity<List<ChartData>> getProductsByBrandChartData(){
+        return new ResponseEntity<>(service.generateProductsByBrandChartData(), HttpStatus.OK);
     }
 
 

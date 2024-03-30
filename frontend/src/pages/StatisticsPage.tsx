@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 import { DataContext } from '../App'
 import "../styles/StatisticsPage.css"
 import { generateBrandDiversityChartData, generateCategoryChartData, generateCategoryQuantityChartData, generatePriceClassChartData } from '../services/ChartDataOperations';
@@ -8,15 +8,23 @@ import StatsBarChart from '../components/charts/StatsBarChart';
 import { Button } from '@mui/material';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import PieChartIcon from '@mui/icons-material/PieChart';
+import { ChartDataType } from '../services/interfaces';
 
 function StatisticsPage(){
     const [displayBarCharts, setBarCharts] = useState(false);
     const {DataList} = useContext(DataContext);
 
-    const chart1Data = generateCategoryChartData(DataList);
-    const chart2Data = generatePriceClassChartData(DataList);
-    const chart3Data = generateBrandDiversityChartData(DataList);
-    const chart4Data = generateCategoryQuantityChartData(DataList);
+    const [chart1Data, changeChart1Data] = useState<ChartDataType[]>([]);
+    const [chart2Data, changeChart2Data] = useState<ChartDataType[]>([]);
+    const [chart3Data, changeChart3Data] = useState<ChartDataType[]>([]);
+    const [chart4Data, changeChart4Data] = useState<ChartDataType[]>([]);
+
+    useEffect(() => {
+        generateCategoryChartData(changeChart1Data);
+        generatePriceClassChartData(changeChart2Data);
+        generateBrandDiversityChartData(changeChart3Data)
+        generateCategoryQuantityChartData(changeChart4Data);
+    }, [])
 
     const chart1Colors = ["#3bcf27", "#00d160", "#00d28c", "#00d0b1", "#00cdcf", "#00c9e3", "#00c3ee", "#1abcff", "#00c3ee", "#00c9e3", "#00cdcf", "#00d0b1", "#00d28c", "#00d160"];
     const chart2Colors = ["#138dcf", "#00b4e5", "#00c7ed", "#16d1ff", "#00c7ed", "#00b4e5",];
