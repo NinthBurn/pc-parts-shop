@@ -2,12 +2,12 @@
   background-color: rgba(22, 22, 24, 0.5);
   border-radius: 30px;
   position: relative;
-  height: 750px;
+  height: 70%;
   width: 95%;
-  left: 2.5vw;
-  top: 12vh;
+  left: 2.5%;
+  top: 15%;
 
-  min-width: 1000px;
+  min-width: fit-content;
   display: flex;
   justify-content: center;
 }
@@ -20,16 +20,16 @@
   flex-direction: column;
 
   margin-top: 20px;
-  row-gap: 30px;
+  row-gap: 3%;
   width: 90%;
-  height: 70%;
+  height: 100%;
 
   min-height: fit-content;
-  min-width: 960px;
+  min-width: fit-content;
 }
 
 .PanelTitle {
-  font-size: 30px;
+  font-size: 200%;
   color: aliceblue;
 }
 
@@ -40,8 +40,8 @@
   display: flex;
   justify-self: start;
   flex-direction: row;
-  min-height: 600px;
-  max-height: 600px;
+  min-height: 80%;
+  max-height: 80%;
 
 }
 
@@ -53,13 +53,7 @@
   background: rgba(157, 208, 238, 0.801);
 }
 
-body {
-  /* background-color: rgb(49, 66, 83); */
-  background: #8BABD2;
-  background: radial-gradient(at center, #8BABD2, #1078B7);/*
-  * Created with https://www.css-gradient.com
-  * Gradient link: https://www.css-gradient.com/?c1=8bd295&c2=1078b7&gt=r&gd=dcc
-  */
+.AdminBody {
   background: #8BD295;
   background: radial-gradient(at center, #8BD295, #1078B7);
   width: 100vw;
@@ -69,26 +63,22 @@ body {
 
 @keyframes popupNotification {
   0% {
-    left: 0px;
-    top: 10vh;
+    top: 95%;
     opacity: 1;
   }
 
   40% {
-    left: 0px;
-    top: 4vh;
+    top: 90%;
     opacity: 1;
   }
 
   70% {
-    left: 0px;
-    top: 4vh;
+    top: 90%;
     opacity: 1;
   }
 
   90% {
-    left: 0px;
-    top: 6vh;
+    top: 95%;
     opacity: 0;
   }
 }
@@ -96,8 +86,12 @@ body {
 .AlertNotification {
   height: "50px";
   align-self: center;
+  text-align: center;
   width: 50%;
-  position: relative;
+  top: 90%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  position: absolute;
   opacity: 0;
   animation: popupNotification;
   animation-duration: 7s;

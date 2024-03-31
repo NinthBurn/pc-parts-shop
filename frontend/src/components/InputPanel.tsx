@@ -32,7 +32,7 @@ function InputPanel(props: InputPanelProps) {
               <StackItem key={key}>
                   <ThemeProvider theme={TextFieldTheme}><TextField className="InputEntryBox" color="textFieldWhite"
                   sx={{
-                  input: { fontSize: "1vmax", fontFamily:'Franklin Gothic Medium', color: 'white' }}} size="small" label={value} 
+                  input: { fontSize: "90%", fontFamily:'Franklin Gothic Medium', color: 'white' }}} size="small" label={value} 
                   variant="filled" value={text[index]} onChange={e => InputTextChanged(text, e.target.value, index)}/>
                   </ThemeProvider>
               </StackItem>

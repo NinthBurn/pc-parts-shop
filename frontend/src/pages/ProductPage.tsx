@@ -13,25 +13,27 @@ function ProductPage(props: {product: ComputerComponent}){
     const navigate = useNavigate(); 
     const product = props.product;
     return (
-        <div className="ProductPanel">
-            <h2>{product.productName}</h2>
-            <div className="ProductInfoPanel">
-                <div style={{textAlign: "center"}}>
-                    <h4>ID: {product.productID}</h4>
-                    <h4>Manufacturer: {product.manufacturer}</h4>
-                    <h4>Category: {product.category}</h4>
+        <div className="ProductPageBody">
+            <div className="ProductPanel">
+                <h2>{product.productName}</h2>
+                <div className="ProductInfoPanel">
+                    <div style={{textAlign: "center"}}>
+                        <h4>ID: {product.productID}</h4>
+                        <h4>Manufacturer: {product.manufacturer}</h4>
+                        <h4>Category: {product.category}</h4>
+                    </div>
+
+                    <div style={{textAlign: "center"}}>
+                        <h4>Price: {product.price}$</h4>
+                        <h4>Release Date: {dateToString(product.releaseDate)}</h4>
+                        <h4>Quantity: {product.quantity}</h4>
+                    </div>
                 </div>
 
-                <div style={{textAlign: "center"}}>
-                    <h4>Price: {product.price}$</h4>
-                    <h4>Release Date: {dateToString(product.releaseDate)}</h4>
-                    <h4>Quantity: {product.quantity}</h4>
-                </div>
+                <ThemeProvider theme={ButtonTheme}>
+                    <Button color="buttonBlue" variant="contained" className="NavigationButton" onClick={() => navigate("/admin")}><ArrowBackIosIcon></ArrowBackIosIcon>Back</Button>
+                </ThemeProvider>
             </div>
-
-            <ThemeProvider theme={ButtonTheme}>
-                <Button color="buttonBlue" variant="contained" className="NavigationButton" onClick={() => navigate("/admin")}><ArrowBackIosIcon></ArrowBackIosIcon>Back</Button>
-            </ThemeProvider>
         </div>
     );
 };

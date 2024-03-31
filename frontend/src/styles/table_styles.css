@@ -13,8 +13,7 @@
 }
 
 .TablePanel {
-  max-height: 600px;
-  width: 90%;
+  width: 95%;
   overflow-y: auto;
   background-color: rgb(74, 129, 167);
   word-wrap: break-word;
@@ -31,7 +30,7 @@
   word-wrap: break-word;
   z-index: 1;
   position: sticky;
-  font-size: 1em;
+  font-size: 110%;
   top: 0;
 }
 
@@ -45,16 +44,15 @@
 
 .TableCell {
   color: rgb(240, 248, 255);
-  font-size: 1.05vmax;
+  font-size: 130%;
+  height: 5.31vh;
   font-family: 'Franklin Gothic Medium';
-  letter-spacing: 1px;
 
   word-wrap: break-word;
   white-space: wrap;
   overflow-wrap: break-word;
   
-  width: calc(min-content+100px);
-  height: 5.82vmin;
+  width: calc(min-content+50px);
   max-width: 300px;
   border: 3px solid rgb(38, 52, 53);
   border-collapse: collapse;
@@ -70,6 +68,6 @@
 
 .TablePageSelect{
   position: absolute;
-  top: 685px;
+  top: 91%;
   align-self: center;
 }

@@ -59,7 +59,7 @@ function AdminPanel() {
   };
 
   return (
-    <div>
+    <div className="AdminBody">
       <div className="AdminPage">
         <div className="App">
           <div className="PanelTitle">Computer Store Administrator Panel</div>
@@ -77,9 +77,9 @@ function AdminPanel() {
             }
           }}
             className="TablePageSelect" page={currentPage + 1} onChange={handlePageChange} siblingCount={0} count={Math.ceil(pageCount)} />
-          {NotificationBox}
         </div>
       </div>
+      {NotificationBox}
       <HomeButton />
       <StatisticsButton />
     </div>

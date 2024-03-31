@@ -1,3 +1,10 @@
+.ProductPageBody{
+    background: #8BD295;
+    background: radial-gradient(at center, #8BD295, #1078B7);
+    height: 100vh;
+    width: 100vw;
+}
+
 .ProductPanel {
     font-size: 20px;
     text-wrap: wrap;
