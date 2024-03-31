@@ -1,5 +1,5 @@
 # Administration Panel for PC Parts Store
-A web application for a computer parts shop. Front-end was written in React using MUI component library and React Router, while the back-end was made using Spring Boot and MongoDB. 
+A web application for a computer parts shop. Front-end was written in React using MUI component library and React Router, while the back-end is using a RESTful API written in Spring Boot. For the database, I have chosen to use MongoDB. 
 
 With the current configuration, the database is stored locally, as I was unable to connect to the MongoDB Atlas cluster they offer for free.
 
@@ -8,11 +8,11 @@ With the current configuration, the database is stored locally, as I was unable 
 * Ability to add, update or delete any entity
 * A live statistics page, displaying information about the products: category diversity, brand diversity, etc.
 * A page for each product
-* (Basic) Pagination
-
+* Pagination, with page caching on the client
+* Sorting based on any property of the objects
 
 # To-do
-* Migrate sorting, filtering & pagination to the back-end
+~~* Migrate sorting, filtering & pagination to the back-end~~
 * Make a detailed page for each product ( description, image(s?) )
 # Preview
 
