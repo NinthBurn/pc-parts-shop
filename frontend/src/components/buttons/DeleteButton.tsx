@@ -32,14 +32,19 @@ function DeleteButton(props: ButtonProps) {
             return;
 
         async function modifyData() {
-            await axios.delete("/api/v1/computer_components/delete/" + identifier);
-            changeData(arrayAfterDeletion);
+            await axios.delete("/api/v1/computer_components/delete/" + identifier)
+            .then(() => {
+                changeData(arrayAfterDeletion);
+                displayNotification(changeNotification, "Entry with ID " + identifier + " has been successfully deleted.", "success");
+            })
+            .catch(() => {
+                displayNotification(changeNotification, "Server could not respond to the request. Change prevented.", "error");
+            });
         }
         
         const arrayAfterDeletion = DeleteElement(DataList, identifier);
         if (arrayAfterDeletion.length < DataList.length) {
             modifyData();
-            displayNotification(changeNotification, "Entry with ID " + identifier + " has been successfully deleted.", "success");
         }
     }
 

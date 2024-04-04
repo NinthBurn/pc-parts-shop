@@ -7,7 +7,6 @@ import mpp.backend.Repository.ComputerComponentsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -155,15 +154,56 @@ public class ComputerComponentsService {
         repository.save(component);
     }
 
-    public void saveComponent(ComputerComponent component) {
+    public String validateComponent(ComputerComponent component){
+        String result = "";
+
+        if(component.getProductID() < 1)
+            result += "ID must be a positive integer.\n";
+
+        if(component.getQuantity() < 0)
+            result += "Quantity must be a positive integer.\n";
+
+        if(component.getPrice() < 0)
+            result += "Price must be a positive number.\n";
+
+        if(component.getCategory().isEmpty() || component.getManufacturer().isEmpty() || component.getProductName().isEmpty())
+            result += "Empty field detected.\n";
+
+        if(component.getReleaseDate().after(new Date()))
+            result += "Invalid date.\n";
+
+        return result;
+    }
+
+    public void saveComponent(ComputerComponent component) throws Exception{
+        String validation = validateComponent(component);
+
+        if(!validation.isEmpty())
+            throw new Exception(validation);
+
         repository.save(component);
     }
 
-    public void saveComponents(List<ComputerComponent> components) {
+    public void saveComponents(List<ComputerComponent> components) throws Exception{
+        components.forEach((component) -> {
+            String validation = validateComponent(component);
+
+            if(!validation.isEmpty())
+                throw new RuntimeException("Element with ID " + component.getProductID() + " could not be validated. The whole list has been discarded. Reason:\n" + validation);
+            });
+
         repository.saveAll(components);
     }
 
-    public void updateComponent(ComputerComponent component){
+    public void updateComponent(ComputerComponent component) throws Exception{
+        String validation = validateComponent(component);
+
+        if(!validation.isEmpty())
+            throw new Exception(validation);
+
+        if(repository.findById(component.getProductID()).isEmpty())
+            throw new Exception("Cannot update element that does not exist.");
+
         repository.save(component);
     }
 
@@ -171,7 +211,10 @@ public class ComputerComponentsService {
     // --- Delete --- //
 
 
-    public void deleteComponentByID(Long id){
+    public void deleteComponentByID(Long id) throws Exception{
+        if(repository.findById(id).isEmpty())
+            throw new Exception("Cannot delete element that does not exist.");
+
         repository.deleteById(id);
     }
 }

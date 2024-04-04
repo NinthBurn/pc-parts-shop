@@ -11,7 +11,7 @@ import { SortDataByProperty, columnNameMap, getSortingOrder } from "../services/
 import { InputTextChanged } from "./InputPanel.tsx";
 import { ComputerComponent } from "./ComputerComponent.tsx";
 import { ComputerComponentToStringArray } from "./ComputerComponent.tsx";
-import { getBackendData } from "../services/backend.tsx";
+import { getPage } from "../services/backend.tsx";
 
 interface TableProps {
 	headers: string[];
@@ -20,72 +20,53 @@ interface TableProps {
 
 function Table(props: TableProps) {
 	const { DataList, changeData } = React.useContext(DataContext);
-    const { changeNotification } = React.useContext(NotificationBoxContext);
+	const { changeNotification } = React.useContext(NotificationBoxContext);
 	const { pageMetaData, changePageMetaData } = React.useContext(PageContext);
-
-	const onColumnHeadClickOld = (index: number) => {
-		if (index < 1 || index > 6) return 0;
-
-        const {sortedData, sortOrder} = SortDataByProperty(DataList, index)
-        changeData(sortedData)
-
-        let sort_notification = "Sorted elements in " + sortOrder + " order by ";
-		sort_notification += props.headers[index - 1] + ".";
-		displayNotification(changeNotification, sort_notification, "info");
-	};
 
 	const onColumnHeadClick = (index: number) => {
 		if (index < 1 || index > 6) return 0;
 
 		let sort_notification = "Sorted elements in ";
 
-		if(pageMetaData.loadedPages === pageMetaData.pageCount){
-			const {sortedData, sortOrder} = SortDataByProperty(DataList, index)
-			changeData(sortedData)
+		const sortOrder = getSortingOrder(index)
 
-			sort_notification += sortOrder + " order by ";
+		const newPageMetaData = { ...pageMetaData };
+		newPageMetaData.sortDirection = sortOrder;
+		newPageMetaData.sortField = columnNameMap[props.headers[index - 1]];
+		changePageMetaData(newPageMetaData);
 
-		}else{ // fetch pages with sorted data from server
-			const sortOrder = getSortingOrder(index)
+		getPage(0, changeData, newPageMetaData, changePageMetaData)
 
-			const newPageMetaData = {...pageMetaData};
-			newPageMetaData.sortDirection = sortOrder;
-			newPageMetaData.sortField = columnNameMap[props.headers[index - 1]];
-			changePageMetaData(newPageMetaData);
-
-			getBackendData(DataList, changeData, newPageMetaData, changePageMetaData);
-
-			sort_notification += (sortOrder === "ASC" ? "ascending" : "descending") + " order by ";
-		}
+		sort_notification += (sortOrder === "ASC" ? "ascending" : "descending") + " order by ";
 
 		sort_notification += props.headers[index - 1] + ".";
 		displayNotification(changeNotification, sort_notification, "info");
 	};
 
-    const rowClicked = (identifier: number) => {
-        const pcPart: ComputerComponent = DataList.filter((p) => {return p.productID === identifier;})[0];
-        const selectedComputerComponent: string[] = ComputerComponentToStringArray(pcPart);
+	const rowClicked = (identifier: number) => {
+		const pcPart: ComputerComponent = DataList.filter((p) => { return p.productID === identifier; })[0];
+		const selectedComputerComponent: string[] = ComputerComponentToStringArray(pcPart);
 
-        displayNotification(changeNotification, "Entry with ID " + identifier + " has been selected.", "info"); 
-        InputTextChanged(selectedComputerComponent, selectedComputerComponent[0], 0);
-    }
+		displayNotification(changeNotification, "Entry with ID " + identifier + " has been selected.", "info");
+		InputTextChanged(selectedComputerComponent, selectedComputerComponent[0], 0);
+	}
 
 	return (
 		<div className="TablePanel">
 			<table className="PartTable">
 
-                <thead className="TableHeader">
-                    <tr key={-1}>
-                        {props.headers.map((column_name: string, key: number) => {
-                            if (key < props.headers.length - 1)
-                                return (
-                                    <th className="TableHeaderColumn" onClick={() => {onColumnHeadClick(key + 1);}} key={key}>
-                                        {column_name}
-                                    </th>);
-                            else return <th key={key}>{column_name}</th>;
-                        })}
-                    </tr>
-                </thead>
+				<thead className="TableHeader">
+					<tr key={-1}>
+						{props.headers.map((column_name: string, key: number) => {
+							if (key < props.headers.length - 1)
+								return (
+									<th className="TableHeaderColumn" onClick={() => { onColumnHeadClick(key + 1); }} key={key}>
+										{column_name}
+									</th>);
+							else return <th key={key}>{column_name}</th>;
+						})}
+					</tr>
+				</thead>
 
 				<tbody key={100}>
 					{props.data.map((pc_part, key) => {
@@ -100,9 +81,9 @@ function Table(props: TableProps) {
 											minWidth: "230px",
 										}}>
 
-										<EditButton element_id={pc_part.productID}/>
-										<DeleteButton element_id={pc_part.productID}/>
-										<ViewButton link={"/product-" + pc_part.productID}/>
+										<EditButton element_id={pc_part.productID} />
+										<DeleteButton element_id={pc_part.productID} />
+										<ViewButton link={"/product-" + pc_part.productID} />
 
 									</div>
 								</td>

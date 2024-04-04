@@ -2,7 +2,6 @@
 .InputBoxPanel{
     background-color: rgb(74, 129, 167);
     width: 50%;
-    height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: center;

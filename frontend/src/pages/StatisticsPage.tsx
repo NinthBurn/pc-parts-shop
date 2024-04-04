@@ -20,10 +20,17 @@ function StatisticsPage(){
     const [chart4Data, changeChart4Data] = useState<ChartDataType[]>([]);
 
     useEffect(() => {
-        generateCategoryChartData(changeChart1Data);
-        generatePriceClassChartData(changeChart2Data);
+        generateCategoryChartData(changeChart1Data)
+            .catch((err) => console.error(err));
+
+        generatePriceClassChartData(changeChart2Data)
+            .catch((err) => console.error(err));
+
         generateBrandDiversityChartData(changeChart3Data)
-        generateCategoryQuantityChartData(changeChart4Data);
+            .catch((err) => console.error(err));
+       
+        generateCategoryQuantityChartData(changeChart4Data)
+            .catch((err) => console.error(err));
     }, [])
 
     const chart1Colors = ["#3bcf27", "#00d160", "#00d28c", "#00d0b1", "#00cdcf", "#00c9e3", "#00c3ee", "#1abcff", "#00c3ee", "#00c9e3", "#00cdcf", "#00d0b1", "#00d28c", "#00d160"];

@@ -1,36 +1,65 @@
 package mpp.backend.Controller;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import mpp.backend.Model.ChartData;
 import mpp.backend.Model.ComputerComponent;
 import mpp.backend.Service.ComputerComponentsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.util.List;
 import java.util.Optional;
+
+@Component
+@Scope
+class FakeDataThread extends Thread{
+    ComputerComponentsService service;
+
+    public void setService(ComputerComponentsService service){
+        this.service = service;
+    }
+
+    @Override
+    public void run(){
+        try{
+            while(true){
+                ComputerComponent faked = DomainFaker.generateFakeComputerComponent();
+                service.saveComponent(faked);
+                ComputerComponentController.dataChanged = true;
+                sleep(1000);
+            }
+        }catch(Exception error){
+            throw new RuntimeException(error.getMessage());
+        }
+    }
+}
 
 //@CrossOrigin(origins = "*")
 //@CrossOrigin("http://localhost:3000")
 @RestController
 @RequestMapping("api/v1/computer_components")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ComputerComponentController {
+    public static boolean dataChanged = false;
+    private FakeDataThread generateFakeEntriesThread;
+
     @Autowired
     private final ComputerComponentsService service;
 
 
     @GetMapping
     public ResponseEntity<List<ComputerComponent>> getAllComponents(){
-        return new ResponseEntity<>(service.getAllComponents(), HttpStatus.OK);
+       return new ResponseEntity<>(service.getAllComponents(), HttpStatus.OK);
     }
 
 
@@ -194,4 +223,22 @@ public class ComputerComponentController {
         }
     }
 
+
+    // --- Miscellaneous --- //
+
+
+    @GetMapping(value="/status")
+    public ResponseEntity<Boolean> getServerStatus(){
+        return new ResponseEntity<>(true, HttpStatus.OK);
+    }
+
+    @GetMapping(value="/data_changed")
+    public ResponseEntity<Boolean> getDataChangedStatus(){
+        boolean status = dataChanged;
+
+        if(dataChanged)
+            dataChanged = false;
+
+        return new ResponseEntity<>(status, HttpStatus.OK);
+    }
 }

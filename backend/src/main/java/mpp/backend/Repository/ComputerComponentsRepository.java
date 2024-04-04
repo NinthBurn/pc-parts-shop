@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.Optional;
 
 public interface ComputerComponentsRepository extends MongoRepository<ComputerComponent, String> {
-    Optional<ComputerComponent> findComputerComponentByProductID(int productID);
-    void deleteComputerComponentByProductID(int productID);
+    Optional<ComputerComponent> findComputerComponentByProductID(long productID);
+    void deleteComputerComponentByProductID(long productID);
 
 }

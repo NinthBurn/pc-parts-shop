@@ -18,7 +18,7 @@ public class ComputerComponent {
     private String realid;
 
     @Indexed(unique = true)
-    private int productID;
+    private long productID;
     private String manufacturer;
     private String category;
     private String productName;
@@ -26,7 +26,7 @@ public class ComputerComponent {
     private Date releaseDate;
     private Integer quantity;
 
-    public ComputerComponent(int productID, String manufacturer, String productName, String category, double price, Integer quantity, Date releaseDate) {
+    public ComputerComponent(long productID, String manufacturer, String productName, String category, double price, Integer quantity, Date releaseDate) {
         this.productID = productID;
         this.manufacturer = manufacturer;
         this.productName = productName;

@@ -10,6 +10,10 @@ function StatsPieChart(chartData: { id: number, label: string, value: number }[]
 
     const pieParams = { height: chartBoxHeight, width: chartBoxWidth, margin: { top: 0, bottom: 80, left: 50, right: 50 } };
 
+    let hideLegend: boolean = true;
+    if(chartData.length < 10)
+        hideLegend = false;
+
     return (
         <div className="chartBox">
             <h4>{chartTitle}</h4>
@@ -22,6 +26,7 @@ function StatsPieChart(chartData: { id: number, label: string, value: number }[]
                 slotProps={{
                     legend: {
                         direction: "row",
+                        hidden: hideLegend,
                         position: { vertical: 'bottom', horizontal: "middle" },
                         labelStyle: {
                             fontFamily: "Franklin Gothic Medium",

@@ -9,7 +9,7 @@ import { DataContext } from '../../App.tsx';
 import { ComputerComponent, ComputerComponentFromStringArray } from '../ComputerComponent.tsx';
 import { displayNotification } from '../DisplayNotification.tsx';
 import { InsertOrUpdateElement } from '../../services/DataOperations.tsx';
-import { modifyElementInBackend } from '../../services/backend.tsx';
+import axios from 'axios';
 
 interface SaveButtonProps {
     InputData: string[];
@@ -38,10 +38,37 @@ export function SaveButton(props: SaveButtonProps) {
         }
         else notificationText = insertStatus;
 
-        displayNotification(changeNotification, notificationText, notificationType);
+
+        async function modifyElementInBackend(insertedComponent: ComputerComponent,
+            changeData: React.Dispatch<React.SetStateAction<ComputerComponent[]>>,
+            newData: ComputerComponent[]) {
+        
+            const newDate = new Date(insertedComponent.releaseDate);
+            newDate.setDate(newDate.getDate() + 1);
+        
+            await axios.post("/api/v1/computer_components/save",
+                {
+                    productID: insertedComponent.productID,
+                    manufacturer: insertedComponent.manufacturer,
+                    productName: insertedComponent.productName,
+                    category: insertedComponent.category,
+                    price: insertedComponent.price,
+                    releaseDate: newDate,
+                    quantity: insertedComponent.quantity,
+                }).then(() => {
+                    changeData(newData);
+                    displayNotification(changeNotification, notificationText, notificationType);
+
+                })
+                .catch(() => {
+                    displayNotification(changeNotification, "Server could not respond to the request. Change prevented.", "error");
+                });
+        
+        }
 
         if (newData.length > 0)
             modifyElementInBackend(insertedComponent, changeData, newData);
+            
     }
 
     return <ThemeProvider theme={ButtonTheme}><Button variant="contained" color="buttonGreen" onClick={() => saveClicked(props.InputData)} className="InsertButton"><AppRegistrationIcon />SAVE</Button></ThemeProvider>;
