@@ -28,6 +28,7 @@ function InputPanel(props: InputPanelProps) {
           {props.labels.map((value, key) => {
             const index = key;
             
+            if(value !== "ID")
             return (
               <StackItem key={key}>
                   <ThemeProvider theme={TextFieldTheme}><TextField className="InputEntryBox" color="textFieldWhite"

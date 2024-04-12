@@ -1,60 +1,42 @@
 package mpp.backend.Controller;
 
 import lombok.RequiredArgsConstructor;
-import mpp.backend.Model.ChartData;
-import mpp.backend.Model.ComputerComponent;
+import mpp.backend.Model.*;
 import mpp.backend.Service.ComputerComponentsService;
+import mpp.backend.Service.DomainFaker;
+import mpp.backend.Service.FakeDataThread;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.*;
 import java.util.List;
 import java.util.Optional;
 
 //@CrossOrigin(origins = "*")
 //@CrossOrigin("http://localhost:3000")
-
-@Component
-@Scope
-class FakeDataThread extends Thread{
-    ComputerComponentsService service;
-
-    public void setService(ComputerComponentsService service){
-        this.service = service;
-    }
-
-    @Override
-    public void run(){
-            try{
-                while(true){
-                    ComputerComponent faked = DomainFaker.generateFakeComputerComponent();
-                    service.saveComponent(faked);
-                    ComputerComponentController.dataChanged = true;
-                    sleep(1000);
-                }
-            }catch(Exception error){
-                throw new RuntimeException(error.getMessage());
-            }
-    }
-}
-
-
 @RestController
 @RequestMapping("api/v1/computer_components")
 @RequiredArgsConstructor
 public class ComputerComponentController {
-    public static boolean dataChanged = false;
     private FakeDataThread generateFakeEntriesThread;
     @Autowired
     private final ComputerComponentsService service;
+
+    @Autowired
+    SimpMessagingTemplate messagingTemplate;
+
+    public ComputerComponentController(){
+        service = new ComputerComponentsService();
+    }
 
     @GetMapping
     public ResponseEntity<List<ComputerComponent>> getAllComponents(){
@@ -69,7 +51,7 @@ public class ComputerComponentController {
     public ResponseEntity<String> insertComponent(@RequestBody ComputerComponent component){
         try{
             service.insertComponent(component);
-            dataChanged = true;
+            broadcastDataChange();
 
         }catch(Exception e){
             return new ResponseEntity<>("An error occurred; the element was not added.\n" + e.getMessage(), HttpStatus.CONFLICT);
@@ -81,7 +63,7 @@ public class ComputerComponentController {
     public ResponseEntity<String> saveComponent(@RequestBody ComputerComponent component){
         try{
             service.saveComponent(component);
-            dataChanged = true;
+            broadcastDataChange();
 
         }catch(Exception e){
             return new ResponseEntity<>("An error occurred; the element was not added.\n" + e.getMessage(), HttpStatus.CONFLICT);
@@ -93,7 +75,7 @@ public class ComputerComponentController {
     public ResponseEntity<String> saveComponentList(@RequestBody List<ComputerComponent> components){
         try{
             service.saveComponents(components);
-            dataChanged = true;
+            broadcastDataChange();
 
         }catch(Exception e){
             return new ResponseEntity<>("An error occurred; the elements could not be added.\n" + e.getMessage(), HttpStatus.CONFLICT);
@@ -163,9 +145,9 @@ public class ComputerComponentController {
 
         try{
             service.updateComponent(component);
-            dataChanged = true;
+            broadcastDataChange();
 
-            return new ResponseEntity<>("Updated component.\n" + component, HttpStatus.OK);
+            return new ResponseEntity<>("Updated component.", HttpStatus.OK);
 
         }catch(Exception e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
@@ -176,7 +158,7 @@ public class ComputerComponentController {
     public ResponseEntity<String> deleteComponent(@PathVariable(name="id")Long _id){
         try{
             service.deleteComponentByID(_id);
-            dataChanged = true;
+            broadcastDataChange();
             return new ResponseEntity<>("Component with id " + _id + " successfully deleted.", HttpStatus.OK);
 
         }catch(Exception e){
@@ -185,21 +167,42 @@ public class ComputerComponentController {
     }
 
 
+    // --- Web sockets, state changes --- //
+
+
+    @MessageMapping("/stomp_endpoint")
+    @SendTo("/topic/status")
+    public WebSocketMessage outputDataChange(@Payload String status){
+        return new WebSocketMessage(status);
+    }
+
+    public void broadcastDataChange(){
+        this.messagingTemplate.convertAndSend("/topic/status", new WebSocketMessage("true"));
+    }
+
     // --- Miscellaneous --- //
 
 
-    @GetMapping(value="/status")
-    public ResponseEntity<Boolean> getServerStatus(){
-        return new ResponseEntity<>(true, HttpStatus.OK);
+    @RequestMapping("/generate_fake_data")
+    public ResponseEntity<String> startFakeDataGenerator(@RequestParam(defaultValue = "1000") int sleepTimeMS){
+        if(generateFakeEntriesThread == null){
+            generateFakeEntriesThread = new FakeDataThread(sleepTimeMS);
+            generateFakeEntriesThread.setController(this);
+            generateFakeEntriesThread.start();
+            return new ResponseEntity<>("Data generator started.", HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>("Data generator is already running.", HttpStatus.FORBIDDEN);
     }
 
-    @GetMapping(value="/data_changed")
-    public ResponseEntity<Boolean> getDataChangedStatus(){
-        boolean status = dataChanged;
+    @RequestMapping("/stop_generator")
+    public ResponseEntity<String> stopFakeDataGenerator(){
+        if(generateFakeEntriesThread != null){
+            generateFakeEntriesThread.stopGenerator();
+            generateFakeEntriesThread = null;
+            return new ResponseEntity<>("Data generator has been stopped. ", HttpStatus.OK);
+        }
 
-        if(dataChanged)
-            dataChanged = false;
-
-        return new ResponseEntity<>(status, HttpStatus.OK);
+        return new ResponseEntity<>("Data generator is not currently running.", HttpStatus.FORBIDDEN);
     }
 }

@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react'
-import { DataContext } from '../App'
+import { DataChangeContext, DataContext } from '../App'
 import "../styles/StatisticsPage.css"
 import { generateBrandDiversityChartData, generateCategoryChartData, generateCategoryQuantityChartData, generatePriceClassChartData } from '../services/ChartDataOperations';
 import StatsPieChart from '../components/charts/StatsPieChart';
@@ -13,6 +13,7 @@ import { ChartDataType } from '../services/interfaces';
 function StatisticsPage(){
     const [displayBarCharts, setBarCharts] = useState(false);
     const {DataList} = useContext(DataContext);
+    const {DataChanged} = useContext(DataChangeContext);
 
     const [chart1Data, changeChart1Data] = useState<ChartDataType[]>([]);
     const [chart2Data, changeChart2Data] = useState<ChartDataType[]>([]);
@@ -31,7 +32,7 @@ function StatisticsPage(){
        
         generateCategoryQuantityChartData(changeChart4Data)
             .catch((err) => console.error(err));
-    }, [])
+    }, [DataChanged])
 
     const chart1Colors = ["#3bcf27", "#00d160", "#00d28c", "#00d0b1", "#00cdcf", "#00c9e3", "#00c3ee", "#1abcff", "#00c3ee", "#00c9e3", "#00cdcf", "#00d0b1", "#00d28c", "#00d160"];
     const chart2Colors = ["#138dcf", "#00b4e5", "#00c7ed", "#16d1ff", "#00c7ed", "#00b4e5",];

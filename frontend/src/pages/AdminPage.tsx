@@ -59,7 +59,7 @@ function AdminPanel() {
               }
             }
           }}
-            className="TablePageSelect" page={pageMetaData.currentPage + 1} onChange={handlePageChange} siblingCount={0} count={Math.ceil(pageCount)} />
+            className="TablePageSelect" page={pageMetaData.currentPage + 1} onChange={handlePageChange} siblingCount={1} count={Math.ceil(pageCount)} />
         </div>
       </div>
       {NotificationBox}

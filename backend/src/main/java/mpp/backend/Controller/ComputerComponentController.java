@@ -3,46 +3,25 @@ package mpp.backend.Controller;
 import lombok.RequiredArgsConstructor;
 import mpp.backend.Model.ChartData;
 import mpp.backend.Model.ComputerComponent;
+import mpp.backend.Model.WebSocketMessage;
 import mpp.backend.Service.ComputerComponentsService;
+import mpp.backend.Service.FakeDataThread;
+import mpp.backend.Service.SequenceGeneratorService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.util.List;
 import java.util.Optional;
-
-@Component
-@Scope
-class FakeDataThread extends Thread{
-    ComputerComponentsService service;
-
-    public void setService(ComputerComponentsService service){
-        this.service = service;
-    }
-
-    @Override
-    public void run(){
-        try{
-            while(true){
-                ComputerComponent faked = DomainFaker.generateFakeComputerComponent();
-                service.saveComponent(faked);
-                ComputerComponentController.dataChanged = true;
-                sleep(1000);
-            }
-        }catch(Exception error){
-            throw new RuntimeException(error.getMessage());
-        }
-    }
-}
 
 //@CrossOrigin(origins = "*")
 //@CrossOrigin("http://localhost:3000")
@@ -50,12 +29,16 @@ class FakeDataThread extends Thread{
 @RequestMapping("api/v1/computer_components")
 @RequiredArgsConstructor
 public class ComputerComponentController {
-    public static boolean dataChanged = false;
     private FakeDataThread generateFakeEntriesThread;
 
     @Autowired
     private final ComputerComponentsService service;
 
+    @Autowired
+    SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    SequenceGeneratorService sequenceGeneratorService;
 
     @GetMapping
     public ResponseEntity<List<ComputerComponent>> getAllComponents(){
@@ -69,27 +52,45 @@ public class ComputerComponentController {
     @PostMapping(value = "/insert")
     public ResponseEntity<String> insertComponent(@RequestBody ComputerComponent component){
         try{
+            component.setProductID(sequenceGeneratorService.generateSequence(ComputerComponent.SEQUENCE_NAME));
             service.insertComponent(component);
+            broadcastDataChange();
+
         }catch(Exception e){
             return new ResponseEntity<>("An error occurred; the element was not added.\n" + e.getMessage(), HttpStatus.CONFLICT);
+
         }
-        return new ResponseEntity<>("Real ID: " + component.getRealid() + "\nProduct ID: " + component.getProductID(), HttpStatus.OK);
+        return new ResponseEntity<>("Product ID: " + component.getProductID(), HttpStatus.OK);
     }
 
     @PostMapping(value = "/save")
     public ResponseEntity<String> saveComponent(@RequestBody ComputerComponent component){
         try{
-            service.saveComponent(component);
+            component.setProductID(sequenceGeneratorService.generateSequence(ComputerComponent.SEQUENCE_NAME));
+            service.insertComponent(component);
+            broadcastDataChange();
+
         }catch(Exception e){
             return new ResponseEntity<>("An error occurred; the element was not added.\n" + e.getMessage(), HttpStatus.CONFLICT);
+
         }
-        return new ResponseEntity<>("Real ID: " + component.getRealid() + "\nProduct ID: " + component.getProductID(), HttpStatus.OK);
+        return new ResponseEntity<>("Product ID: " + component.getProductID(), HttpStatus.OK);
     }
 
     @PostMapping(value = "/savelist")
     public ResponseEntity<String> saveComponentList(@RequestBody List<ComputerComponent> components){
         try{
-            service.saveComponents(components);
+            components.forEach((component -> {
+                component.setProductID(sequenceGeneratorService.generateSequence(ComputerComponent.SEQUENCE_NAME));
+                try{
+                    service.insertComponent(component);
+
+                }catch(Exception e){
+                    throw new RuntimeException(e.getMessage());
+                }
+            }));
+            broadcastDataChange();
+
         }catch(Exception e){
             return new ResponseEntity<>("An error occurred; the elements could not be added.\n" + e.getMessage(), HttpStatus.CONFLICT);
         }
@@ -140,30 +141,25 @@ public class ComputerComponentController {
 
 
     @GetMapping("/id/{id}")
-    public ResponseEntity<Optional<ComputerComponent>> getComponentByProductID(@PathVariable(name="id")int componentID){
+    public ResponseEntity<Optional<ComputerComponent>> getComponentByProductID(@PathVariable(name="id")long componentID){
         return new ResponseEntity<>(service.getComponentByProductID(componentID), HttpStatus.OK);
     }
 
     @PutMapping(value="/edit/{id}")
-    public ResponseEntity<String> updateComponent(@RequestBody ComputerComponent component, @PathVariable(name="id")int _id){
-        Optional<ComputerComponent> originalComponent = service.getComponentByProductID(_id);
-
+    public ResponseEntity<String> updateComponent(@RequestBody ComputerComponent component, @PathVariable(name="id")long _id){
         if(_id != component.getProductID()){
             return new ResponseEntity<>("Indicated ID and entity ID are different. Request denied.", HttpStatus.CONFLICT);
         }
 
-        if(originalComponent.isPresent()){
-            try{
-                component.setRealid(originalComponent.get().getRealid());
-                service.updateComponent(component);
-                return new ResponseEntity<>("Updated component.\n" + component, HttpStatus.OK);
+        try{
+            component.setProductID(_id);
+            service.updateComponent(component);
+            broadcastDataChange();
 
-            }catch(Exception e){
-                return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
-            }
+            return new ResponseEntity<>("Updated component.\n" + component, HttpStatus.OK);
 
-        }else{
-            return new ResponseEntity<>("Update failed. Component with specified ID does not exist.", HttpStatus.CONFLICT);
+        }catch(Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
         }
     }
 
@@ -171,6 +167,8 @@ public class ComputerComponentController {
     public ResponseEntity<String> deleteComponent(@PathVariable(name="id")int _id){
         try{
             service.deleteComponentByProductID(_id);
+            broadcastDataChange();
+
             return new ResponseEntity<>("Component with id " + _id + " successfully deleted.", HttpStatus.OK);
 
         }catch(Exception e){
@@ -179,66 +177,42 @@ public class ComputerComponentController {
     }
 
 
-    // --- Methods using the real ID (database ID) --- //
+    // --- Web sockets, state changes --- //
 
 
-    @GetMapping("/realid/{realid}")
-    public ResponseEntity<Optional<ComputerComponent>> getComponentByID(@PathVariable(name="realid")String componentID){
-        return new ResponseEntity<>(service.getComponentByID(componentID), HttpStatus.OK);
+    @MessageMapping("/stomp_endpoint")
+    @SendTo("/topic/status")
+    public WebSocketMessage outputDataChange(@Payload String status){
+        return new WebSocketMessage(status);
     }
 
-    @DeleteMapping(value="/delete_realid/{id}")
-    public ResponseEntity<String> deleteComponent(@PathVariable(name="id")String _id){
-        try{
-            service.deleteComponentByRealID(_id);
-            return new ResponseEntity<>("Component with id " + _id + " successfully deleted.", HttpStatus.OK);
-
-        }catch(Exception e){
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
-        }
+    public void broadcastDataChange(){
+        this.messagingTemplate.convertAndSend("/topic/status", new WebSocketMessage("true"));
     }
-
-    @PutMapping(value="/edit_realid/{id}")
-    public ResponseEntity<String> updateComponent(@RequestBody ComputerComponent component, @PathVariable(name="id")String _id){
-        component.setRealid(_id);
-        service.updateComponent(component);
-
-        Optional<ComputerComponent> originalComponent = service.getComponentByID(_id);
-
-        if(!_id.equals(component.getRealid())){
-            return new ResponseEntity<>("Indicated ID and entity ID are different. Request denied.", HttpStatus.CONFLICT);
-        }
-
-        if(originalComponent.isPresent()){
-            try{
-                service.updateComponent(component);
-                return new ResponseEntity<>("Updated component.\n" + component, HttpStatus.OK);
-
-            }catch(Exception e){
-                return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
-            }
-
-        }else{
-            return new ResponseEntity<>("Update failed. Component with specified ID does not exist.", HttpStatus.CONFLICT);
-        }
-    }
-
 
     // --- Miscellaneous --- //
 
 
-    @GetMapping(value="/status")
-    public ResponseEntity<Boolean> getServerStatus(){
-        return new ResponseEntity<>(true, HttpStatus.OK);
+    @RequestMapping("/generate_fake_data")
+    public ResponseEntity<String> startFakeDataGenerator(@RequestParam(defaultValue = "1000") int sleepTimeMS){
+        if(generateFakeEntriesThread == null){
+            generateFakeEntriesThread = new FakeDataThread(sleepTimeMS);
+            generateFakeEntriesThread.setController(this);
+            generateFakeEntriesThread.start();
+            return new ResponseEntity<>("Data generator started.", HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>("Data generator is already running.", HttpStatus.FORBIDDEN);
     }
 
-    @GetMapping(value="/data_changed")
-    public ResponseEntity<Boolean> getDataChangedStatus(){
-        boolean status = dataChanged;
+    @RequestMapping("/stop_generator")
+    public ResponseEntity<String> stopFakeDataGenerator(){
+        if(generateFakeEntriesThread != null){
+            generateFakeEntriesThread.stopGenerator();
+            generateFakeEntriesThread = null;
+            return new ResponseEntity<>("Data generator has been stopped. ", HttpStatus.OK);
+        }
 
-        if(dataChanged)
-            dataChanged = false;
-
-        return new ResponseEntity<>(status, HttpStatus.OK);
+        return new ResponseEntity<>("Data generator is not currently running.", HttpStatus.FORBIDDEN);
     }
 }

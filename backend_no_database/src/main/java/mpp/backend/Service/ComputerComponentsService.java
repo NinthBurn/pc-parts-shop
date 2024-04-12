@@ -1,21 +1,180 @@
 package mpp.backend.Service;
 
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import mpp.backend.Model.ChartData;
 import mpp.backend.Model.ComputerComponent;
 import mpp.backend.Repository.ComputerComponentsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.query.FluentQuery;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.function.Function;
 
 @AllArgsConstructor
 @Service
 public class ComputerComponentsService {
     @Autowired
     private final ComputerComponentsRepository repository;
+
+    public ComputerComponentsService(){
+        repository = new ComputerComponentsRepository() {
+            @Override
+            public void flush() {
+
+            }
+
+            @Override
+            public <S extends ComputerComponent> S saveAndFlush(S entity) {
+                return null;
+            }
+
+            @Override
+            public <S extends ComputerComponent> List<S> saveAllAndFlush(Iterable<S> entities) {
+                return null;
+            }
+
+            @Override
+            public void deleteAllInBatch(Iterable<ComputerComponent> entities) {
+
+            }
+
+            @Override
+            public void deleteAllByIdInBatch(Iterable<Long> longs) {
+
+            }
+
+            @Override
+            public void deleteAllInBatch() {
+
+            }
+
+            @Override
+            public ComputerComponent getOne(Long aLong) {
+                return null;
+            }
+
+            @Override
+            public ComputerComponent getById(Long aLong) {
+                return null;
+            }
+
+            @Override
+            public ComputerComponent getReferenceById(Long aLong) {
+                return null;
+            }
+
+            @Override
+            public <S extends ComputerComponent> List<S> findAll(Example<S> example) {
+                return null;
+            }
+
+            @Override
+            public <S extends ComputerComponent> List<S> findAll(Example<S> example, Sort sort) {
+                return null;
+            }
+
+            @Override
+            public <S extends ComputerComponent> List<S> saveAll(Iterable<S> entities) {
+                return null;
+            }
+
+            @Override
+            public List<ComputerComponent> findAll() {
+                return null;
+            }
+
+            @Override
+            public List<ComputerComponent> findAllById(Iterable<Long> longs) {
+                return null;
+            }
+
+            @Override
+            public <S extends ComputerComponent> S save(S entity) {
+                return null;
+            }
+
+            @Override
+            public Optional<ComputerComponent> findById(Long aLong) {
+                return Optional.empty();
+            }
+
+            @Override
+            public boolean existsById(Long aLong) {
+                return false;
+            }
+
+            @Override
+            public long count() {
+                return 0;
+            }
+
+            @Override
+            public void deleteById(Long aLong) {
+
+            }
+
+            @Override
+            public void delete(ComputerComponent entity) {
+
+            }
+
+            @Override
+            public void deleteAllById(Iterable<? extends Long> longs) {
+
+            }
+
+            @Override
+            public void deleteAll(Iterable<? extends ComputerComponent> entities) {
+
+            }
+
+            @Override
+            public void deleteAll() {
+
+            }
+
+            @Override
+            public List<ComputerComponent> findAll(Sort sort) {
+                return null;
+            }
+
+            @Override
+            public Page<ComputerComponent> findAll(Pageable pageable) {
+                return null;
+            }
+
+            @Override
+            public <S extends ComputerComponent> Optional<S> findOne(Example<S> example) {
+                return Optional.empty();
+            }
+
+            @Override
+            public <S extends ComputerComponent> Page<S> findAll(Example<S> example, Pageable pageable) {
+                return null;
+            }
+
+            @Override
+            public <S extends ComputerComponent> long count(Example<S> example) {
+                return 0;
+            }
+
+            @Override
+            public <S extends ComputerComponent> boolean exists(Example<S> example) {
+                return false;
+            }
+
+            @Override
+            public <S extends ComputerComponent, R> R findBy(Example<S> example, Function<FluentQuery.FetchableFluentQuery<S>, R> queryFunction) {
+                return null;
+            }
+        };
+    }
 
 
     // --- Pagination --- //
@@ -150,15 +309,17 @@ public class ComputerComponentsService {
 
     // --- Insert & Update --- //
 
-    public void insertComponent(ComputerComponent component){
+    public void insertComponent(ComputerComponent component) throws Exception{
+        String validation = validateComponent(component);
+
+        if(!validation.isEmpty())
+            throw new Exception(validation);
+
         repository.save(component);
     }
 
     public String validateComponent(ComputerComponent component){
         String result = "";
-
-        if(component.getProductID() < 1)
-            result += "ID must be a positive integer.\n";
 
         if(component.getQuantity() < 0)
             result += "Quantity must be a positive integer.\n";

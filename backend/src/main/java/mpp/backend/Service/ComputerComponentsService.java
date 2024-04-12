@@ -137,7 +137,7 @@ public class ComputerComponentsService {
         return repository.findById(id);
     }
 
-    public Optional<ComputerComponent> getComponentByProductID(int id){
+    public Optional<ComputerComponent> getComponentByProductID(Long id){
         return repository.findComputerComponentByProductID(id);
     }
 
@@ -148,43 +148,81 @@ public class ComputerComponentsService {
 
     // --- Insert & Update --- //
 
-    public void insertComponent(ComputerComponent component){
+
+    public String validateComponent(ComputerComponent component){
+        String result = "";
+
+        if(component.getQuantity() < 0)
+            result += "Quantity must be a positive integer.\n";
+
+        if(component.getPrice() < 0)
+            result += "Price must be a positive number.\n";
+
+        if(component.getCategory().isEmpty() || component.getManufacturer().isEmpty() || component.getProductName().isEmpty())
+            result += "Empty field detected.\n";
+
+        if(component.getReleaseDate().after(new Date()))
+            result += "Invalid date.\n";
+
+        return result;
+    }
+
+    public void insertComponent(ComputerComponent component) throws Exception{
+        String validation = validateComponent(component);
+
+        if(!validation.isEmpty())
+            throw new Exception(validation);
+
         repository.save(component);
     }
 
-    public void saveComponent(ComputerComponent component) {
+    public void saveComponent(ComputerComponent component) throws Exception{
         Optional<ComputerComponent> originalComponent = repository.findComputerComponentByProductID(component.getProductID());
         if (originalComponent.isPresent()){
-            component.setRealid(originalComponent.get().getRealid());
+            component.setProductID(originalComponent.get().getProductID());
         }
+
+        String validation = validateComponent(component);
+
+        if(!validation.isEmpty())
+            throw new Exception(validation);
 
         repository.save(component);
     }
 
     public void saveComponents(List<ComputerComponent> components) {
         components.forEach((component -> {
-            Optional<ComputerComponent> originalComponent = repository.findComputerComponentByProductID(component.getProductID());
-            if (originalComponent.isPresent()){
-                component.setRealid(originalComponent.get().getRealid());
-            }
+                    Optional<ComputerComponent> originalComponent = repository.findComputerComponentByProductID(component.getProductID());
+                    if (originalComponent.isPresent()) {
+                        component.setProductID(originalComponent.get().getProductID());
+                    }
 
-            repository.save(component);
+                    String validation = validateComponent(component);
+
+                    if (!validation.isEmpty())
+                        throw new RuntimeException("Element with ID " + component.getProductID() + " could not be validated. The whole list has been discarded. Reason:\n" + validation);
         }));
+        repository.saveAll(components);
     }
 
-    public void updateComponent(ComputerComponent component){
+    public void updateComponent(ComputerComponent component) throws Exception{
         Optional<ComputerComponent> originalComponent = repository.findComputerComponentByProductID(component.getProductID());
-        component.setRealid(originalComponent.get().getRealid());
+        component.setProductID(originalComponent.get().getProductID());
+
+        String validation = validateComponent(component);
+
+        if(!validation.isEmpty())
+            throw new Exception(validation);
+
+        if(repository.findComputerComponentByProductID(component.getProductID()).isEmpty())
+            throw new Exception("Cannot update element that does not exist.");
+
         repository.save(component);
     }
 
 
     // --- Delete --- //
 
-
-    public void deleteComponentByRealID(String id){
-        repository.deleteById(id);
-    }
 
     public void deleteComponentByProductID(int id){
         if(!repository.findComputerComponentByProductID(id).isPresent())
